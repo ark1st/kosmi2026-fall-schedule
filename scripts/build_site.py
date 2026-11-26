@@ -26,6 +26,11 @@ for it in K["items"]:
 PICK = {p["id"]: p for p in K["picks"]}
 WATCH = {p["id"]: p for p in K["watch"]}
 MINE = set(K["my_papers"])
+# short summaries written from the abstract book (scripts/summarize_abstracts.py); the abstract text itself is never published
+_sp = ROOT / "work" / "abstract_summaries.json"
+SUMS = json.loads(_sp.read_text(encoding="utf-8")) if _sp.exists() else {}
+_ap = ROOT / "work" / "abstracts.json"
+ABS_PAGE = {k: v["page"] for k, v in json.loads(_ap.read_text(encoding="utf-8")).items()} if _ap.exists() else {}
 DAYS = {d["id"]: d for d in K["days"]}
 DAYKEY = {d["id"]: "gyeongju-" + d["date"] for d in K["days"]}
 
@@ -169,6 +174,10 @@ for d in K["days"]:
         if s["kind"] == "plenary" and its:
             r = its[0].get("research") or {}
             if r.get("prep"): parts.insert(0, "<p><b>강연 미리보기</b> %s</p>" % E(r["prep"]))
+            sm0 = SUMS.get(its[0]["id"])
+            if sm0: parts.insert(0, "<p><b>초록 요약</b> %s</p>" % E(sm0["sum"]))
+            w0 = WATCH.get(its[0]["id"])
+            if w0 and w0.get("rel"): parts.insert(0, "<p><b>🔗 내 연구와의 연관 · %s</b> %s</p>" % (E(w0["rel"]), E(w0["why"])))
             if r.get("profile"): speakers.append({"name": "%s (%s)" % (its[0]["speaker"], its[0]["aff"]), "bio": {"en": r["profile"]}})
             R = dict(R); R["links"] = (R.get("links") or []) + (r.get("links") or [])
         body = "".join(x for x in parts if x)
@@ -190,13 +199,20 @@ for d in K["days"]:
             for it in its:
                 r = it.get("research") or {}
                 ab = []
-                if it["id"] in WATCH: ab.append("<p><b>✨ 추천 이유</b> %s</p>" % E(WATCH[it["id"]]["why"]))
+                w = WATCH.get(it["id"])
+                if w and w.get("rel"): ab.append("<p><b>🔗 내 연구와의 연관 · %s</b> %s</p>" % (E(w["rel"]), E(w["why"])))
+                elif w: ab.append("<p><b>✨ 추천 이유</b> %s</p>" % E(w["why"]))
+                sm = SUMS.get(it["id"])
+                if sm:
+                    ab.append("<p><b>초록 요약</b> %s</p>" % E(sm["sum"]))
+                    ab.append('<p style="color:var(--text3);font-size:12.5px">초록집%s 내용을 짧게 줄인 요약이며 원문이 아닙니다.</p>'
+                              % (" (PDF %d쪽)" % ABS_PAGE[it["id"]] if it["id"] in ABS_PAGE else ""))
                 if it.get("detail"): ab.append("".join(P(x) for x in it["detail"].split("\n") if x.strip()))
                 if r.get("prep"): ab.append("<p><b>예습</b> %s</p>" % E(r["prep"]))
                 if r.get("profile"):
                     conf = {"high": "확인됨", "medium": "부분 확인", "low": "불확실"}.get(r.get("confidence"), "")
                     ab.append("<p><b>발표자</b> %s%s</p>" % (E(r["profile"]), " <i>(%s)</i>" % conf if conf else ""))
-                if not (it.get("detail") or r.get("prep")): ab.insert(0, '<p style="color:var(--text2)">공식 홈페이지는 제목·발표자·소속만 공개하고 초록은 공개하지 않았습니다.</p>')
+                if not (it.get("detail") or r.get("prep") or sm): ab.insert(0, '<p style="color:var(--text2)">공식 홈페이지는 제목·발표자·소속만 공개하고 초록은 공개하지 않았습니다.</p>')
                 if it.get("tags"): ab.append('<p style="color:var(--text2)">주제(자동 분류): %s</p>' % E(", ".join(it["tags"])))
                 ab.append(gloss_html(it["id"], 5))
                 extra = list(r.get("links") or [])
@@ -265,6 +281,27 @@ route += "<h5>눈여겨볼 개별 발표</h5>" + table(["번호", "발표", "이
      "<b>%s</b><br><span class=\"muted\">%s · %s</span>" % (E(ALL_ITEMS[w["id"]]["title"]), E(ALL_ITEMS[w["id"]]["speaker"]), E(ALL_ITEMS[w["id"]].get("aff") or "")),
      E(w["why"])] for w in K["watch"]])
 add("추천 동선", route, "추정")
+
+rel = [w for w in K["watch"] if w.get("rel")]
+if rel:
+    def when(w):
+        it = ALL_ITEMS[w["id"]]; ss = S[it["sid"]]
+        row = next((p for p in papers_by_sid.get(it["sid"], []) if p["id"] == w["id"]), {})
+        return ss["day"], ss["start"], row.get("time", ""), ss
+    body = ('<p class="muted">초록집을 읽고 고른, 게시포스터 26F-P2-12(MODIFINDER)와 방법이나 대상이 맞닿는 발표입니다. '
+            '「직접」은 에이전트로 문헌·근거를 탐색·검증하거나 가설을 만드는 연구, 「인접」은 근거 검색·지식그래프·평가 방법이나 유전체 데이터·검사를 다루는 연구입니다.</p>')
+    for lv in ("직접", "인접"):
+        rows = sorted((w for w in rel if w["rel"] == lv), key=lambda w: when(w)[:3])
+        if not rows: continue
+        body += "<h5>%s 연관 (%d)</h5>" % (lv, len(rows)) + table(["언제·어디", "발표", "연관되는 점"], [
+            ['<span style="white-space:nowrap">%s %s</span><br><span class="muted">%s%s</span>' % (
+                E(DAYS[when(w)[0]]["label"]), E(when(w)[2] or when(w)[1]), E(when(w)[3]["label"]),
+                " · " + E(when(w)[3]["room"]) if when(w)[3].get("room") else ""),
+             "<b>%s</b><br><span class=\"muted\">%s%s · %s</span>" % (
+                E(ALL_ITEMS[w["id"]]["title"]), E(w["id"] + " · " if w["id"].startswith("26F") else ""),
+                E(ALL_ITEMS[w["id"]]["speaker"]), E(ALL_ITEMS[w["id"]].get("aff") or "")),
+             E(w["why"])] for w in rows])
+    sections.insert(1, {"title": "내 연구와 연관된 발표 (%d)" % len(rel), "src": "초록집 요약", "open": True, "html": body})
 
 sh = OFF["shuttle"]
 body = P(" ↔ ".join(sh["stops"]))
@@ -344,7 +381,8 @@ def wish_paper(pid):
 info = {"note": "공식 홈페이지 내용과 웹 조사 결과를 모았습니다. 일정·장소는 공식 안내가 우선합니다. 데이터 생성 " + built + ".",
         "sections": sections,
         "picks": {"events": [p["id"] for p in K["picks"] if p["level"] in ("필수", "추천")],
-                  "papers": [wish_paper(i) for i in list(MINE) + [w["id"] for w in K["watch"]]]},
+                  "papers": [wish_paper(i) for i in list(MINE) + [w["id"] for w in K["watch"]]
+                             if ALL_ITEMS[i]["sid"] in papers_by_sid]},
         "seed": [wish_paper(i) for i in MINE]}
 
 

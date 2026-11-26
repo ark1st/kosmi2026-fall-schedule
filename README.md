@@ -27,7 +27,7 @@ python3 -m http.server 8791
 - **PWA**, 다크 모드, 한국어/English UI 전환, 딥링크 `?day=&open=<eventId>&q=&view=week|search|info&pin=`
 
 발표 시각(`~10:18`)은 공식 공개가 없어 세션 시간을 발표 수로 나눈 추정치입니다.
-공식 홈페이지는 초록을 공개하지 않았습니다.
+초록은 초록집을 발표별로 2문장 이내로 줄인 요약입니다(원문 아님).
 
 ## 데이터 파이프라인 (`scripts/`)
 
@@ -36,11 +36,16 @@ python3 -m http.server 8791
 ```bash
 python3 scripts/parse_official.py   # work/source/html → work/official.json
 python3 scripts/build_data.py       # + 시간표(수기 입력) + work/research → work/kosmi.json
+python3 scripts/parse_abstracts.py  # (선택) 초록집 텍스트 → work/abstracts.json (발표별 분할)
+python3 scripts/summarize_abstracts.py  # (선택) codex exec로 발표별 2문장 요약 → work/abstract_summaries.json
 python3 scripts/build_site.py       # → data/ (schedule.js, details.js, info.js, papers/, search/) + artifact.html
 python3 scripts/port_app.py         # ../neurips2026/assets → assets/ (앱을 다시 옮길 때만)
 ```
 
 - 시간표는 공식 이미지(`work/source/img/program_timetable.jpg`, 2026-11-19판)를 보고 `build_data.py`에 직접 입력했습니다.
 - 추천 동선·"내 발표" 표시는 `build_data.py`의 `PICKS` / `WATCH` / `MY_PAPERS`에서 바꿉니다.
+- 초록집(PDF)은 참가자에게만 배포된 자료라 저장소에 넣지 않습니다. 사이트에는 발표별 짧은 요약만 싣고 원문은 싣지 않습니다.
+  초록집 텍스트는 `pdftotext 초록집.pdf work/abstract_book_text/all_raw.txt`로 만듭니다(`work/`는 gitignore).
+- "내 연구와 연관된 발표"는 `WATCH` 항목의 `rel`(직접/인접)로 정합니다.
 
 출처: https://www.kosmiconference.org/2026_fall/ · 비공식 사이트입니다.
