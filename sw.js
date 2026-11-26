@@ -1,5 +1,5 @@
 /* KOSMI 2026 Fall schedule — service worker: network-first with full cache fallback */
-var VERSION = 'kosmi2026f-v2';
+var VERSION = 'kosmi2026f-v3';
 var SHELL = [
   './',
   'index.html',

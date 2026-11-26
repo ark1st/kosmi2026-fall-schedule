@@ -287,16 +287,20 @@ if rel:
     def when(w):
         it = ALL_ITEMS[w["id"]]; ss = S[it["sid"]]
         row = next((p for p in papers_by_sid.get(it["sid"], []) if p["id"] == w["id"]), {})
-        return ss["day"], ss["start"], row.get("time", ""), ss
+        its_ = ITEMS.get(it["sid"], [])
+        extra = row.get("psess", "").replace("키오스크 ", "")
+        if not extra and ss["kind"] in ("symposium", "oral"): extra = "%d번째 발표" % (its_.index(it) + 1)
+        return ss["day"], ss["start"], row.get("time", ""), ss, extra
     body = ('<p class="muted">초록집을 읽고 고른, 게시포스터 26F-P2-12(MODIFINDER)와 방법이나 대상이 맞닿는 발표입니다. '
-            '「직접」은 에이전트로 문헌·근거를 탐색·검증하거나 가설을 만드는 연구, 「인접」은 근거 검색·지식그래프·평가 방법이나 유전체 데이터·검사를 다루는 연구입니다.</p>')
+            '「직접」은 에이전트로 문헌·근거를 탐색·검증하거나 가설을 만드는 연구, 「인접」은 근거 검색·지식그래프·평가 방법이나 유전체 데이터·검사를 다루는 연구입니다. '
+            '~로 시작하는 시각은 공식 시각이 아니라 추정치입니다(자유연제·심포지엄은 세션을 발표 수로, e-포스터는 키오스크별 발표 수로 나눔). 게시포스터는 질의응답 시간대만 있습니다.</p>')
     for lv in ("직접", "인접"):
         rows = sorted((w for w in rel if w["rel"] == lv), key=lambda w: when(w)[:3])
         if not rows: continue
         body += "<h5>%s 연관 (%d)</h5>" % (lv, len(rows)) + table(["언제·어디", "발표", "연관되는 점"], [
             ['<span style="white-space:nowrap">%s %s</span><br><span class="muted">%s%s</span>' % (
                 E(DAYS[when(w)[0]]["label"]), E(when(w)[2] or when(w)[1]), E(when(w)[3]["label"]),
-                " · " + E(when(w)[3]["room"]) if when(w)[3].get("room") else ""),
+                (" · " + E(when(w)[3]["room"]) if when(w)[3].get("room") else "") + (" · " + E(when(w)[4]) if when(w)[4] else "")),
              "<b>%s</b><br><span class=\"muted\">%s%s · %s</span>" % (
                 E(ALL_ITEMS[w["id"]]["title"]), E(w["id"] + " · " if w["id"].startswith("26F") else ""),
                 E(ALL_ITEMS[w["id"]]["speaker"]), E(ALL_ITEMS[w["id"]].get("aff") or "")),
