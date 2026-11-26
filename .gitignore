@@ -1,0 +1,8 @@
+work/
+archive/
+artifact.html
+.omc/
+.DS_Store
+__pycache__/
+*.log
+.claude/

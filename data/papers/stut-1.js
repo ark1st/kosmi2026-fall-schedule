@@ -1,0 +1,7 @@
+window.KOSMI_PAPERS = window.KOSMI_PAPERS || {};
+window.KOSMI_PAPERS["tut-1"] = [
+{"id":"tut-1-1","en":"왜 지금 AI agent 인가","authors":"윤덕용","inst":"연세대학교","abs":"<p>- 의학연구 패러다임 전환과 AI agent의 필요성</p><p style=\"color:var(--text2)\">주제(자동 분류): LLM·에이전트</p>","link":"https://www.kosmiconference.org/2026_fall/content/tutorial.html","time":"~09:00"},
+{"id":"tut-1-2","en":"Claude와 친해지기: AI 연구 환경 구축","authors":"김동원","inst":"연세대학교","abs":"<p>- 빅데이터 → 머신러닝·딥러닝 → 생성형 AI → AI Agent로 이어지는 AI 기술의 발전과 연구 활용 변화 이해</p><p>- AI Agent의 개념과 Claude를 활용한 연구 업무 자동화 사례 소개</p><p>- Claude Desktop의 주요 기능 및 연구 활용 방법</p><p>- Claude Desktop 설치 및 기본 사용 환경 설정</p><p style=\"color:var(--text2)\">주제(자동 분류): LLM·에이전트</p>","link":"https://www.kosmiconference.org/2026_fall/content/tutorial.html","time":"~09:10"},
+{"id":"tut-1-3","en":"Claude Skill과 MCP를 활용한 의료데이터 분석환경 구축 및 활용","authors":"장유지","inst":"연세대학교","abs":"<p>- Claude Skill의 개념, 기본 구조 및 활용 사례 이해</p><p>- Connector와 Skill을 활용한 외부 도구 연계 및 활용 실습</p><p>⋅ PubMed 및 외부 Connector 연계 실습</p><p>⋅ Skill을 활용한 의료데이터 품질검증 시연</p><p>- m4를 활용한 데이터 탐색 및 연구가설 기반 통계분석 자동화 환경 소개와 시연</p><p style=\"color:var(--text2)\">주제(자동 분류): LLM·에이전트</p>","link":"https://www.kosmiconference.org/2026_fall/content/tutorial.html","time":"~09:40"},
+{"id":"tut-1-4","en":"나만의 분석 Skill 완성하기","authors":"이성민","inst":"연세대학교","abs":"<p>- Skill 작성의 기본 구조 이해</p><p>- 본인의 연구질문 또는 분석 목적에 맞는 Skill 직접 작성</p><p>- 작성한 Skill을 활용한 데이터 분석 및 결과 확인</p><p>- Skill과 MCP를 연계한 개인 연구 분석 환경 활용 사례 소개</p>","link":"https://www.kosmiconference.org/2026_fall/content/tutorial.html","time":"~10:40"}
+];
